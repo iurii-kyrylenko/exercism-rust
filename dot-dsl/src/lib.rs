@@ -1,6 +1,8 @@
 pub mod graph {
+    use std::collections::HashMap;
+
     pub struct Graph {
-        pub attrs: Vec<(String, String)>,
+        pub attrs: HashMap<String, String>,
         pub nodes: Vec<graph_items::node::Node>,
         pub edges: Vec<graph_items::edge::Edge>,
 
@@ -9,9 +11,20 @@ pub mod graph {
     impl Graph {
         pub fn new() -> Self {
             Graph {
-                attrs: Vec::new(),
+                attrs: HashMap::new(),
                 nodes: Vec::new(),
                 edges: Vec::new(),
+            }
+        }
+
+        pub fn with_attrs(&self, attrs: &[(&str, &str)]) -> Self {
+            Graph {
+                attrs: attrs
+                    .iter()
+                    .map(|(fst, snd)| (String::from(*fst), String::from(*snd)))
+                    .collect(),
+                nodes: self.nodes.clone(),
+                edges: self.edges.clone(),
             }
         }
 
@@ -30,21 +43,27 @@ pub mod graph {
                 edges: edges.to_vec(),
             }
         }
+
+        pub fn get_node(&self, label: &str) -> Option<&graph_items::node::Node> {
+            self.nodes.iter().find(|node| node.label == label)
+        }
     }
 
     pub mod graph_items {
         pub mod node {
+            use std::collections::HashMap;
+
             #[derive(Clone, Debug)]
             pub struct Node {
-                label: String,
-                attrs: Vec<(String, String)>,
+                pub label: String,
+                attrs: HashMap<String, String>,
             }
 
             impl Node {
                 pub fn new(label: &str) -> Self {
                     Node {
                         label: String::from(label),
-                        attrs: Vec::new(),
+                        attrs: HashMap::new(),
                     }
                 }
 
@@ -57,6 +76,10 @@ pub mod graph {
                             .collect(),
                     }
                 }
+
+                pub fn get_attr(&self, attr: &str) -> Option<&str> {
+                    self.attrs.get(attr).map(|s| s.as_str())
+                }
             }
 
             impl PartialEq for Node {
@@ -67,15 +90,29 @@ pub mod graph {
         }
 
         pub mod edge {
+            use std::collections::HashMap;
+
             #[derive(Clone, Debug)]
             pub struct Edge {
                 label: (String, String),
+                attrs: HashMap<String, String>,
             }
 
             impl Edge {
                 pub fn new(fst: &str, snd: &str) -> Self {
                     Edge {
                         label: (String::from(fst), String::from(snd)),
+                        attrs: HashMap::new(),
+                    }
+                }
+
+                pub fn with_attrs(&self, attrs: &[(&str, &str)]) -> Self {
+                    Edge {
+                        label: self.label.clone(),
+                        attrs: attrs
+                            .iter()
+                            .map(|(fst, snd)| (String::from(*fst), String::from(*snd)))
+                            .collect(),
                     }
                 }
             }
