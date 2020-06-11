@@ -1,10 +1,12 @@
 pub mod graph {
     use std::collections::HashMap;
+    use graph_items::node::Node;
+    use graph_items::edge::Edge;
 
     pub struct Graph {
         pub attrs: HashMap<String, String>,
-        pub nodes: Vec<graph_items::node::Node>,
-        pub edges: Vec<graph_items::edge::Edge>,
+        pub nodes: Vec<Node>,
+        pub edges: Vec<Edge>,
 
     }
 
@@ -19,16 +21,13 @@ pub mod graph {
 
         pub fn with_attrs(&self, attrs: &[(&str, &str)]) -> Self {
             Graph {
-                attrs: attrs
-                    .iter()
-                    .map(|(fst, snd)| (String::from(*fst), String::from(*snd)))
-                    .collect(),
+                attrs: graph_items::to_hash_map(attrs),
                 nodes: self.nodes.clone(),
                 edges: self.edges.clone(),
             }
         }
 
-        pub fn with_nodes(&self, nodes: &[graph_items::node::Node]) -> Self {
+        pub fn with_nodes(&self, nodes: &[Node]) -> Self {
             Graph {
                 attrs: self.attrs.clone(),
                 nodes: nodes.to_vec(),
@@ -36,7 +35,7 @@ pub mod graph {
             }
         }
 
-        pub fn with_edges(&self, edges: &[graph_items::edge::Edge]) -> Self {
+        pub fn with_edges(&self, edges: &[Edge]) -> Self {
             Graph {
                 attrs: self.attrs.clone(),
                 nodes: self.nodes.clone(),
@@ -44,12 +43,21 @@ pub mod graph {
             }
         }
 
-        pub fn get_node(&self, label: &str) -> Option<&graph_items::node::Node> {
+        pub fn get_node(&self, label: &str) -> Option<&Node> {
             self.nodes.iter().find(|node| node.label == label)
         }
     }
 
     pub mod graph_items {
+        use std::collections::HashMap;
+
+        pub fn to_hash_map(attrs: &[(&str, &str)]) -> HashMap<String, String> {
+            attrs
+                .iter()
+                .map(|(fst, snd)| (String::from(*fst), String::from(*snd)))
+                .collect()
+        }
+
         pub mod node {
             use std::collections::HashMap;
 
@@ -70,10 +78,7 @@ pub mod graph {
                 pub fn with_attrs(&self, attrs: &[(&str, &str)]) -> Self {
                     Node {
                         label: self.label.clone(),
-                        attrs: attrs
-                            .iter()
-                            .map(|(fst, snd)| (String::from(*fst), String::from(*snd)))
-                            .collect(),
+                        attrs: super::to_hash_map(attrs),
                     }
                 }
 
@@ -109,10 +114,7 @@ pub mod graph {
                 pub fn with_attrs(&self, attrs: &[(&str, &str)]) -> Self {
                     Edge {
                         label: self.label.clone(),
-                        attrs: attrs
-                            .iter()
-                            .map(|(fst, snd)| (String::from(*fst), String::from(*snd)))
-                            .collect(),
+                        attrs: super::to_hash_map(attrs),
                     }
                 }
             }
