@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 pub struct Graph {
     pub attrs: HashMap<String, String>,
+    // perhaps nodes and edges could be stored in HashMap collections as well
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
 }
