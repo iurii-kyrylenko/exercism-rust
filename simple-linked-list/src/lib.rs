@@ -22,11 +22,9 @@ impl<T> SimpleLinkedList<T> {
     pub fn push(&mut self, data: T) {
         let node = Some(Box::new(Node {
             data,
-            // https://rust-unofficial.github.io/too-many-lists/img/indy.gif
             next: mem::replace(&mut self.head, None),
         }));
 
-        // mem::replace(&mut self.head, node);
         self.head = node;
     }
 
@@ -34,7 +32,6 @@ impl<T> SimpleLinkedList<T> {
         match mem::replace(&mut self.head, None) {
             None => None,
             Some(node) => {
-                // mem::replace(&mut self.head, node.next);
                 self.head = node.next;
                 Some(node.data)
             }
@@ -42,10 +39,6 @@ impl<T> SimpleLinkedList<T> {
     }
 
     pub fn peek(&self) -> Option<&T> {
-        // match &self.head {
-        //     None => None,
-        //     Some(node) => Some(&node.data)
-        // }
         self.head.as_ref().map(|node| &node.data)
     }
 
