@@ -1,5 +1,4 @@
 use std::iter::FromIterator;
-use std::mem;
 
 pub struct SimpleLinkedList<T> {
     head: Option<Box<Node<T>>>,
@@ -16,20 +15,29 @@ impl<T> SimpleLinkedList<T> {
     }
 
     pub fn len(&self) -> usize {
-        SimpleLinkedList::node_len(&self.head)
+        let mut count = 0;
+        let mut maybe = &self.head;
+
+        while let Some(node) = maybe {
+            maybe = &node.next;
+            count += 1;
+        }
+
+        count
     }
 
     pub fn push(&mut self, data: T) {
         let node = Some(Box::new(Node {
             data,
-            next: mem::replace(&mut self.head, None),
+            // https://rust-unofficial.github.io/too-many-lists/img/indy.gif
+            next: self.head.take(),
         }));
 
         self.head = node;
     }
 
     pub fn pop(&mut self) -> Option<T> {
-        match mem::replace(&mut self.head, None) {
+        match self.head.take() {
             None => None,
             Some(node) => {
                 self.head = node.next;
@@ -42,33 +50,20 @@ impl<T> SimpleLinkedList<T> {
         self.head.as_ref().map(|node| &node.data)
     }
 
-    pub fn rev(self) -> SimpleLinkedList<T>
-    where
-        T: Copy,
-    {
+    pub fn rev(self) -> SimpleLinkedList<T> {
+        self.to_rev_iterator().collect()
+    }
+
+    fn to_rev_iterator(self) -> std::vec::IntoIter<T> {
         let mut vector = Vec::new();
-        SimpleLinkedList::node_into_rev_vec(&self.head, &mut vector);
-        vector.into_iter().collect()
-    }
+        let mut maybe = self.head;
 
-    fn node_len(node: &Option<Box<Node<T>>>) -> usize {
-        match node {
-            None => 0,
-            Some(node) => SimpleLinkedList::node_len(&node.next) + 1,
+        while let Some(node) = maybe {
+            maybe = node.next;
+            vector.push(node.data);
         }
-    }
 
-    fn node_into_rev_vec(node: &Option<Box<Node<T>>>, vector: &mut Vec<T>)
-    where
-        T: Copy,
-    {
-        match node {
-            None => (),
-            Some(node) => {
-                vector.push(node.data);
-                SimpleLinkedList::node_into_rev_vec(&node.next, vector)
-            }
-        }
+        vector.into_iter()
     }
 }
 
@@ -95,10 +90,8 @@ impl<T> FromIterator<T> for SimpleLinkedList<T> {
 // of IntoIterator is that implementing that interface is fairly complicated, and
 // demands more of the student than we expect at this point in the track.
 
-impl<T: Copy> Into<Vec<T>> for SimpleLinkedList<T> {
+impl<T> Into<Vec<T>> for SimpleLinkedList<T> {
     fn into(self) -> Vec<T> {
-        let mut vector = Vec::new();
-        SimpleLinkedList::node_into_rev_vec(&self.head, &mut vector);
-        vector.into_iter().rev().collect()
+        self.to_rev_iterator().rev().collect()
     }
 }
