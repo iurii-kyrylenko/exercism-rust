@@ -1,29 +1,24 @@
+use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 
 struct Counts {
-    a: usize,
-    c: usize,
-    g: usize,
-    t: usize,
+    map: HashMap<char, usize>,
 }
 
 impl Counts {
     fn new() -> Self {
         Counts {
-            a: 0,
-            c: 0,
-            g: 0,
-            t: 0,
+            // Option: use macro maplit::hashmap!
+            map: vec![('A', 0), ('C', 0), ('G', 0), ('T', 0)]
+                .into_iter()
+                .collect(),
         }
     }
 
     fn handle_char(&mut self, c: char) -> Result<(), char> {
-        match c {
-            'A' => Ok(self.a += 1),
-            'C' => Ok(self.c += 1),
-            'G' => Ok(self.g += 1),
-            'T' => Ok(self.t += 1),
-            _ => Err(c),
+        match self.map.entry(c).and_modify(|v| *v += 1) {
+            Occupied(_) => Ok(()),
+            Vacant(_) => Err(c),
         }
     }
 
@@ -33,12 +28,6 @@ impl Counts {
         }
 
         Ok(())
-    }
-
-    fn to_hash_map(&self) -> HashMap<char, usize> {
-        vec![('A', self.a), ('C', self.c), ('G', self.g), ('T', self.t)]
-            .into_iter()
-            .collect()
     }
 }
 
@@ -55,5 +44,5 @@ pub fn nucleotide_counts(dna: &str) -> Result<HashMap<char, usize>, char> {
     let mut counts = Counts::new();
     let _ = counts.handle_str(dna)?;
 
-    Ok(counts.to_hash_map())
+    Ok(counts.map)
 }
