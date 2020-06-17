@@ -13,6 +13,16 @@ fn test_transform_one_value() {
 
 #[test]
 #[ignore]
+fn test_transform_non_ascii_value() {
+    let input = input_from(&[(1, vec!['Ā'])]);
+
+    let expected = expected_from(&[('ā', 1)]);
+
+    assert_eq!(expected, etl::transform(&input));
+}
+
+#[test]
+#[ignore]
 fn test_transform_more_values() {
     let input = input_from(&[(1, vec!['A', 'E', 'I', 'O', 'U'])]);
 
