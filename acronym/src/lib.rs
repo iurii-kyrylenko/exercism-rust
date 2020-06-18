@@ -18,13 +18,17 @@ impl<'a> Abbr<'a> {
         }
     }
 
+    fn set_state_for_char_case(&mut self, c: char) {
+        self.state = if c.is_uppercase() {
+            State::WordU
+        } else {
+            State::WordL
+        };
+    }
+
     fn handle_space(&mut self, c: char) -> bool {
         if c.is_alphabetic() {
-            self.state = if c.is_uppercase() {
-                State::WordU
-            } else {
-                State::WordL
-            };
+            self.set_state_for_char_case(c);
             true
         } else {
             false
@@ -59,11 +63,7 @@ impl<'a> Abbr<'a> {
 
     fn handle_word_a(&mut self, c: char) -> bool {
         if c.is_alphabetic() {
-            self.state = if c.is_uppercase() {
-                State::WordU
-            } else {
-                State::WordL
-            };
+            self.set_state_for_char_case(c);
         } else {
             self.state = State::Space;
         }
