@@ -32,7 +32,10 @@ fn punctuation() {
 #[test]
 #[ignore]
 fn all_caps_word() {
-    assert_eq!(acronym::abbreviate("GNU Image Manipulation Program"), "GIMP");
+    assert_eq!(
+        acronym::abbreviate("GNU Image Manipulation Program"),
+        "GIMP"
+    );
 }
 
 #[test]
@@ -54,7 +57,9 @@ fn punctuation_without_whitespace() {
 #[ignore]
 fn very_long_abbreviation() {
     assert_eq!(
-        acronym::abbreviate("Rolling On The Floor Laughing So Hard That My Dogs Came Over And Licked Me"),
+        acronym::abbreviate(
+            "Rolling On The Floor Laughing So Hard That My Dogs Came Over And Licked Me"
+        ),
         "ROTFLSHTMDCOALM"
     );
 }
@@ -71,17 +76,11 @@ fn consecutive_delimiters() {
 #[test]
 #[ignore]
 fn apostrophes() {
-    assert_eq!(
-        acronym::abbreviate("Halley's Comet"),
-        "HC"
-    );
+    assert_eq!(acronym::abbreviate("Halley's Comet"), "HC");
 }
 
 #[test]
 #[ignore]
 fn underscore_emphasis() {
-    assert_eq!(
-        acronym::abbreviate("The Road _Not_ Taken"),
-        "TRNT"
-    );
+    assert_eq!(acronym::abbreviate("The Road _Not_ Taken"), "TRNT");
 }
