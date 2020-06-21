@@ -5,9 +5,13 @@ pub fn primes_up_to(upper_bound: u64) -> Vec<u64> {
 
     let mut checks = vec![true; n];
 
-    for i in 2..limit {
-        step(&mut checks, i);
-    }
+    let step = |i| {
+        (i * i..checks.len())
+            .step_by(i)
+            .for_each(|j| checks[j] = false)
+    };
+
+    (2..limit).for_each(step);
 
     checks
         .into_iter()
@@ -18,13 +22,4 @@ pub fn primes_up_to(upper_bound: u64) -> Vec<u64> {
         })
         .skip(2)
         .collect()
-}
-
-fn step(a: &mut [bool], i: usize) {
-    let mut j = i * i;
-
-    while j < a.len() {
-        a[j] = false;
-        j += i;
-    }
 }
