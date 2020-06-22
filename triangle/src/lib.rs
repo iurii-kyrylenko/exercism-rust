@@ -1,19 +1,39 @@
-pub struct Triangle;
+use std::collections::BTreeSet;
+use std::ops::Add;
 
-impl Triangle {
-    pub fn build(sides: [u64; 3]) -> Option<Triangle> {
-        unimplemented!("Construct new Triangle from following sides: {:?}. Return None if the sides are invalid.", sides);
+#[derive(Debug)]
+pub struct Triangle<T> {
+    // Unfortunately, the trait `std::cmp::Ord` is not implemented for `{float}`
+    sides: BTreeSet<T>,
+}
+
+impl<T: Add<Output = T> + Clone + Copy + Ord> Triangle<T> {
+    pub fn build(sides: [T; 3]) -> Option<Triangle<T>> {
+        let set = sides.iter().cloned().collect::<BTreeSet<T>>();
+
+        let vec = set.iter().collect::<Vec<_>>();
+
+        // Check for zero
+        if *vec[0] + *vec[0] == *vec[0] {
+            return None;
+        }
+
+        match vec.len() {
+            2 if *vec[0] + *vec[0] < *vec[1] => None,
+            3 if *vec[0] + *vec[1] < *vec[2] => None,
+            _ => Some(Triangle { sides: set }),
+        }
     }
 
     pub fn is_equilateral(&self) -> bool {
-        unimplemented!("Determine if the Triangle is equilateral.");
-    }
-
-    pub fn is_scalene(&self) -> bool {
-        unimplemented!("Determine if the Triangle is scalene.");
+        self.sides.len() == 1
     }
 
     pub fn is_isosceles(&self) -> bool {
-        unimplemented!("Determine if the Triangle is isosceles.");
+        self.sides.len() == 2
+    }
+
+    pub fn is_scalene(&self) -> bool {
+        self.sides.len() == 3
     }
 }
