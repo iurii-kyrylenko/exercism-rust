@@ -1,27 +1,27 @@
-use std::collections::BTreeSet;
 use std::ops::Add;
 
-#[derive(Debug)]
 pub struct Triangle<T> {
-    // Unfortunately, the trait `std::cmp::Ord` is not implemented for `{float}`
-    sides: BTreeSet<T>,
+    sides: Vec<T>,
 }
 
-impl<T: Add<Output = T> + Clone + Copy + Ord> Triangle<T> {
+impl<T: Add<Output = T> + Clone + Copy + PartialEq + PartialOrd> Triangle<T> {
     pub fn build(sides: [T; 3]) -> Option<Triangle<T>> {
-        let set = sides.iter().cloned().collect::<BTreeSet<T>>();
+        // Create sorted set manually (cannot use BTreeSet because
+        // the trait Ord is not implemented for floats)
+        let mut vec: Vec<T> = sides.to_vec();
+        vec.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        vec.dedup();
 
-        let vec = set.iter().collect::<Vec<_>>();
-
-        // Check for zero
-        if *vec[0] + *vec[0] == *vec[0] {
+        // Check for zero side
+        if vec[0] + vec[0] == vec[0] {
             return None;
         }
 
+        // Exclude invalid triangles
         match vec.len() {
-            2 if *vec[0] + *vec[0] < *vec[1] => None,
-            3 if *vec[0] + *vec[1] < *vec[2] => None,
-            _ => Some(Triangle { sides: set }),
+            2 if vec[0] + vec[0] < vec[1] => None,
+            3 if vec[0] + vec[1] < vec[2] => None,
+            _ => Some(Triangle { sides: vec }),
         }
     }
 
