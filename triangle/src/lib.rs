@@ -4,7 +4,7 @@ pub struct Triangle<T> {
     sides: Vec<T>,
 }
 
-impl<T: Add<Output = T> + Clone + Copy + PartialEq + PartialOrd> Triangle<T> {
+impl<T: Add<Output = T> + Clone + Copy + PartialOrd> Triangle<T> {
     pub fn build(sides: [T; 3]) -> Option<Triangle<T>> {
         // Create sorted set manually (cannot use BTreeSet because
         // the trait Ord is not implemented for floats)
