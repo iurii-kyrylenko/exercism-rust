@@ -1,21 +1,45 @@
 #[derive(Debug, PartialEq)]
-pub struct DNA;
+// We don't need to store the original DNA strand here. According
+// to the spec, this structure has the only purpose: RNA transcription.
+pub struct DNA(RNA);
 
 #[derive(Debug, PartialEq)]
-pub struct RNA;
+pub struct RNA(String);
 
 impl DNA {
     pub fn new(dna: &str) -> Result<DNA, usize> {
-        unimplemented!("Construct new DNA from '{}' string. If string contains invalid nucleotides return index of first invalid nucleotide", dna);
+        // We perform the actual RNA transcription in constructor
+        // to make method `into_rna` as efficient as possible.
+        // We validate and transcript at the same pass.
+        let rna = dna
+            .chars()
+            .enumerate()
+            .map(|(i, c)| match c {
+                'G' => Ok('C'),
+                'C' => Ok('G'),
+                'T' => Ok('A'),
+                'A' => Ok('U'),
+                _ => Err(i),
+            })
+            .collect::<Result<String, usize>>()?;
+
+        Ok(DNA(RNA(rna)))
     }
 
     pub fn into_rna(self) -> RNA {
-        unimplemented!("Transform DNA {:?} into corresponding RNA", self);
+        self.0
     }
 }
 
 impl RNA {
     pub fn new(rna: &str) -> Result<RNA, usize> {
-        unimplemented!("Construct new RNA from '{}' string. If string contains invalid nucleotides return index of first invalid nucleotide", rna);
+        if let Some(i) = rna
+            .chars()
+            .position(|c| c != 'A' && c != 'C' && c != 'G' && c != 'U')
+        {
+            Err(i)
+        } else {
+            Ok(RNA(rna.to_string()))
+        }
     }
 }
