@@ -1,3 +1,6 @@
+// Run ignored and featured tests:
+// cargo test --features=generic -- --ignored
+
 use binary_search::find;
 
 #[test]
