@@ -1,6 +1,8 @@
+use std::cmp::Ordering::{Equal, Greater, Less};
+
 pub fn find<T, S>(array: S, key: T) -> Option<usize>
 where
-    T: PartialOrd,
+    T: Ord,
     S: AsRef<[T]>,
 {
     find_with_pos(array.as_ref(), key, 0)
@@ -8,21 +10,15 @@ where
 
 fn find_with_pos<T>(slice: &[T], key: T, pos: usize) -> Option<usize>
 where
-    T: PartialOrd,
+    T: Ord,
 {
     let mid = slice.len() / 2;
-
     let check = slice.get(mid)?;
-
-    if *check == key {
-        return Some(pos + mid);
-    }
-
     let (left, right) = slice.split_at(mid);
 
-    if *check < key {
-        find_with_pos(&right[1..], key, pos + mid + 1)
-    } else {
-        find_with_pos(left, key, pos)
+    match check.cmp(&key) {
+        Equal => Some(pos + mid),
+        Less => find_with_pos(&right[1..], key, pos + mid + 1),
+        Greater => find_with_pos(left, key, pos),
     }
 }
