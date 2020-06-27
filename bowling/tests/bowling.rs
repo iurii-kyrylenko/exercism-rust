@@ -186,11 +186,11 @@ fn points_scored_in_the_two_rolls_after_a_strike_are_counted_twice_as_a_bonus() 
 fn consecutive_strikes_each_get_the_two_roll_bonus() {
     let mut game = BowlingGame::new();
 
-    let _ = game.roll(10);
-    let _ = game.roll(10);
-    let _ = game.roll(10);
-    let _ = game.roll(5);
-    let _ = game.roll(3);
+    let _ = game.roll(10); // 30
+    let _ = game.roll(10); // 25
+    let _ = game.roll(10); // 18
+    let _ = game.roll(5); //  5
+    let _ = game.roll(3); //  3
 
     for _ in 0..12 {
         let _ = game.roll(0);
@@ -315,6 +315,52 @@ fn the_two_balls_after_a_final_strike_cannot_score_an_invalid_number_of_pins() {
 
 #[test]
 #[ignore]
+fn test_strike_series() {
+    let mut game = BowlingGame::new();
+
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(5);
+    let _ = game.roll(2);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(6);
+    let _ = game.roll(3);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(8);
+    let _ = game.roll(2);
+
+    assert_eq!(game.score(), Some(211));
+}
+
+#[test]
+#[ignore]
+fn test_strike_series_in_the_10th_frame() {
+    let mut game = BowlingGame::new();
+
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(5);
+    let _ = game.roll(2);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(6);
+    let _ = game.roll(3);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(10);
+    let _ = game.roll(2);
+
+    assert_eq!(game.score(), Some(215));
+}
+
+#[test]
+#[ignore]
 fn the_two_balls_after_a_final_strike_can_be_a_strike_and_non_strike() {
     let mut game = BowlingGame::new();
 
@@ -431,7 +477,6 @@ fn cannot_roll_after_bonus_roll_for_strike() {
 
     assert_eq!(game.roll(2), Err(Error::GameComplete));
 }
-
 
 #[test]
 #[ignore]
