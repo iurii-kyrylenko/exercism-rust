@@ -1,51 +1,88 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
+use std::fmt;
+use MatchResult::*;
 
 pub fn tally(match_results: &str) -> String {
     let mut report = Report::new();
 
-    let teams = match_results
+    match_results
         .lines()
         .map(TeamEntry::build_two)
         .flatten()
         .for_each(|team| report.add_team(&team));
 
-    unimplemented!("===== {:#?}", report.teams);
+    report.to_string()
 }
 
 struct Report {
-    teams: HashMap<String, TeamStats>,
+    teams: BTreeMap<String, TeamStats>,
 }
 
 impl Report {
     fn new() -> Self {
         Self {
-            teams: HashMap::new(),
+            teams: BTreeMap::new(),
         }
     }
 
     fn add_team(&mut self, team: &TeamEntry) {
-        let entry = self.teams.entry(team.team.clone());
-
-        let stats = entry.or_insert(TeamStats {
-            matches: 0,
-            wins: 0,
-            drafts: 0,
-            losses: 0,
-            points: 0,
-        });
-
-        stats.matches += 1;
-        // ...
+        self.teams
+            .entry(team.name.clone())
+            .or_insert(TeamStats::default())
+            .update(&team.result);
     }
 }
 
-#[derive(Debug)]
+impl fmt::Display for Report {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        macro_rules! FMT {
+            () => {
+                "{:30} |{:>3} |{:>3} |{:>3} |{:>3} |{:>3}"
+            };
+        }
+
+        write!(f, FMT!(), "Team", "MP", "W", "D", "L", "P")?;
+
+        let mut show: Vec<(&String, &TeamStats)> = self.teams.iter().collect();
+
+        show.sort_by_key(|k| -k.1.points);
+
+        for (name, s) in show {
+            writeln!(f)?;
+            write!(f, FMT!(), name, s.mp, s.wins, s.draws, s.losses, s.points)?;
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Default, Debug)]
 struct TeamStats {
-    matches: i32,
+    mp: i32,
     wins: i32,
-    drafts: i32,
+    draws: i32,
     losses: i32,
     points: i32,
+}
+
+impl TeamStats {
+    fn update(&mut self, result: &MatchResult) {
+        self.mp += 1;
+
+        match result {
+            Win => {
+                self.wins += 1;
+                self.points += 3;
+            }
+            Draw => {
+                self.draws += 1;
+                self.points += 1;
+            }
+            _ => {
+                self.losses += 1;
+            }
+        }
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -55,50 +92,54 @@ enum MatchResult {
     Draw,
 }
 
+impl MatchResult {
+    fn new(s: &str) -> Self {
+        match s {
+            "win" => Win,
+            "loss" => Loss,
+            _ => Draw,
+        }
+    }
+
+    fn negate(&self) -> Self {
+        match self {
+            Win => Loss,
+            Loss => Win,
+            _ => Draw,
+        }
+    }
+}
+
 struct TeamEntry {
-    team: String,
+    name: String,
     result: MatchResult,
+}
+
+impl TeamEntry {
+    fn build_two(s: &str) -> Vec<Self> {
+        let MatchEntry {
+            team1,
+            team2,
+            result,
+        } = MatchEntry::new(s);
+
+        vec![
+            Self {
+                name: team1,
+                result,
+            },
+            Self {
+                name: team2,
+                result: result.negate(),
+            },
+        ]
+    }
 }
 
 struct MatchEntry {
     team1: String,
     team2: String,
     result: MatchResult,
-}
-
-impl MatchResult {
-    fn new(s: &str) -> Self {
-        match s {
-            "win" => MatchResult::Win,
-            "loss" => MatchResult::Loss,
-            _ => MatchResult::Draw,
-        }
-    }
-
-    fn compliment(&self) -> Self {
-        match self {
-            MatchResult::Win => MatchResult::Loss,
-            MatchResult::Loss => MatchResult::Win,
-            _ => MatchResult::Draw,
-        }
-    }
-}
-
-impl TeamEntry {
-    fn build_two(s: &str) -> Vec<Self> {
-        let match_entry = MatchEntry::new(s);
-
-        vec![
-            Self {
-                team: match_entry.team1,
-                result: match_entry.result,
-            },
-            Self {
-                team: match_entry.team2,
-                result: match_entry.result.compliment(),
-            },
-        ]
-    }
 }
 
 impl MatchEntry {
