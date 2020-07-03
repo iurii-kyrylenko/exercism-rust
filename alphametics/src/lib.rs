@@ -1,70 +1,78 @@
 use permutator::KPermutationIterator;
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::time::Instant;
 
-#[derive(Debug)]
-struct Alphametic<'a> {
-    terms: Vec<&'a str>,
-    map: HashMap<char, u8>,
+struct Alphametic {
+    keys: String,
+    term_map: HashMap<String, isize>,
 }
 
-impl<'a> Alphametic<'a> {
-    fn new(input: &'a str) -> Self {
+impl Alphametic {
+    fn new(input: &str) -> Self {
         let re = Regex::new(r"\s*(\+|==)\s*").unwrap();
-        let terms: Vec<&'a str> = re.split(input.trim()).collect();
+        let terms: Vec<&str> = re.split(input.trim()).collect();
+        let last_term_id = terms.len() - 1;
 
-        let map = terms
-            .iter()
-            .map(|t| t.chars())
+        let set: HashSet<char> = terms.iter().map(|t| t.chars()).flatten().collect();
+        let keys: String = set.iter().collect();
+
+        let mut term_map: HashMap<String, isize> = HashMap::new();
+
+        for (i, term) in terms.iter().enumerate() {
+            let delta = if i == last_term_id { -1 } else { 1 };
+            let count = term_map.entry(term.to_string()).or_insert(0);
+            *count += delta;
+        }
+
+        Self { term_map, keys }
+    }
+
+    fn char_map(&self, numbers: Vec<&u8>) -> HashMap<char, u8> {
+        self.keys.chars().zip(numbers.iter().map(|n| **n)).collect()
+    }
+
+    fn to_number(term: &str, map: &HashMap<char, u8>) -> isize {
+        term.chars().fold(0, |acc, c| 10 * acc + map[&c] as isize)
+    }
+
+    fn is_lead_zero(&self, map: &HashMap<char, u8>) -> bool {
+        self.term_map
+            .keys()
+            .map(|key| key.chars().nth(0))
             .flatten()
-            .map(|c| (c, 0))
-            .collect();
-
-        Self { terms, map }
+            .any(|c| map[&c] == 0)
     }
 
-    fn update_map(&mut self, numbers: Vec<&u8>) {
-        for (key, number) in self.map.clone().keys().zip(numbers) {
-            self.map.insert(*key, *number);
-        }
-    }
-
-    fn to_number(&self, i: usize, term: &str) -> i64 {
-        let number = term
-            .chars()
-            .fold(0, |acc, c| 10 * acc + self.map[&c] as i64);
-        if i == self.terms.len() - 1 {
-            -number
-        } else {
-            number
-        }
-    }
-
-    fn check(&self) -> bool {
+    fn check(&self, map: &HashMap<char, u8>) -> bool {
         let sum = self
-            .terms
+            .term_map
             .iter()
-            .enumerate()
-            .map(|(i, term)| self.to_number(i, term))
-            .sum::<i64>();
-        sum == 0
+            .map(|(term, i)| Alphametic::to_number(term, map) * i)
+            .sum::<isize>();
+
+        sum == 0 && !self.is_lead_zero(map)
     }
 }
 
 pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
-    let mut solver = Alphametic::new(input);
-    let len = solver.map.len();
+    let timer = Instant::now();
+    let solver = Alphametic::new(input);
     let data: Vec<u8> = (0..10 as u8).collect();
-    let permutator = KPermutationIterator::new(&data, len);
+    let permutator = KPermutationIterator::new(&data, solver.keys.len());
 
     for numbers in permutator {
-        solver.update_map(numbers);
+        let map = solver.char_map(numbers);
 
-        match solver.check() {
-            true => return Some(solver.map),
+        match solver.check(&map) {
+            true => {
+                println!("========= done in {:?} ============", timer.elapsed());
+                return Some(map);
+            }
             _ => continue,
         }
     }
 
+    println!("========= done in {:?} ============", timer.elapsed());
     None
 }
