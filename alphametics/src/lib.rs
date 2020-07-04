@@ -1,6 +1,6 @@
-use permutator::KPermutationIterator;
+use itertools::Itertools;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::time::Instant;
 
 struct Alphametic {
@@ -14,8 +14,7 @@ impl Alphametic {
         let terms: Vec<&str> = re.split(input.trim()).collect();
         let last_term_id = terms.len() - 1;
 
-        let set: HashSet<char> = terms.iter().map(|t| t.chars()).flatten().collect();
-        let keys: String = set.iter().collect();
+        let keys = terms.iter().map(|t| t.chars()).flatten().unique().collect();
 
         let mut term_map: HashMap<String, isize> = HashMap::new();
 
@@ -28,8 +27,8 @@ impl Alphametic {
         Self { term_map, keys }
     }
 
-    fn char_map(&self, numbers: Vec<&u8>) -> HashMap<char, u8> {
-        self.keys.chars().zip(numbers.iter().map(|n| **n)).collect()
+    fn char_map(&self, numbers: Vec<u8>) -> HashMap<char, u8> {
+        self.keys.chars().zip(numbers).collect()
     }
 
     fn to_number(term: &str, map: &HashMap<char, u8>) -> isize {
@@ -58,8 +57,7 @@ impl Alphametic {
 pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
     let timer = Instant::now();
     let solver = Alphametic::new(input);
-    let data: Vec<u8> = (0..10 as u8).collect();
-    let permutator = KPermutationIterator::new(&data, solver.keys.len());
+    let permutator = (0..10 as u8).permutations(solver.keys.len());
 
     for numbers in permutator {
         let map = solver.char_map(numbers);
