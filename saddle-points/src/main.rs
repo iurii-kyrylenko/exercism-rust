@@ -1,30 +1,16 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-pub fn find_saddle_points(input: &[Vec<u64>]) -> Vec<(usize, usize)> {
+fn get_max(input: &[Vec<u64>]) -> BTreeSet<(usize, usize)> {
     let rows = input.len();
-    if rows == 0 {
-        return vec![];
-    }
-
     let cols = input[0].len();
-    if cols == 0 {
-        return vec![];
-    }
-
-    let maxs = get_maxs(rows, cols, &input);
-    let mins = get_mins(rows, cols, &input);
-
-    maxs.intersection(&mins).cloned().collect()
-}
-
-fn get_maxs(rows: usize, cols: usize, input: &[Vec<u64>]) -> BTreeSet<(usize, usize)> {
     let mut result = BTreeSet::new();
 
     for i in 0..rows {
         let mut map: BTreeMap<u64, Vec<(usize, usize)>> = BTreeMap::new();
 
         for j in 0..cols {
-            map.entry(input[i][j]).or_insert(vec![]).push((i, j));
+            let value = input[i][j];
+            map.entry(value).or_insert(vec![]).push((i, j));
         }
 
         for cell in map.values().last().unwrap() {
@@ -35,14 +21,17 @@ fn get_maxs(rows: usize, cols: usize, input: &[Vec<u64>]) -> BTreeSet<(usize, us
     result
 }
 
-fn get_mins(rows: usize, cols: usize, input: &[Vec<u64>]) -> BTreeSet<(usize, usize)> {
+fn get_min(input: &[Vec<u64>]) -> BTreeSet<(usize, usize)> {
+    let rows = input.len();
+    let cols = input[0].len();
     let mut result = BTreeSet::new();
 
     for j in 0..cols {
         let mut map: BTreeMap<u64, Vec<(usize, usize)>> = BTreeMap::new();
 
         for i in 0..rows {
-            map.entry(input[i][j]).or_insert(vec![]).push((i, j));
+            let value = input[i][j];
+            map.entry(value).or_insert(vec![]).push((i, j));
         }
 
         for cell in map.values().next().unwrap() {
@@ -51,4 +40,12 @@ fn get_mins(rows: usize, cols: usize, input: &[Vec<u64>]) -> BTreeSet<(usize, us
     }
 
     result
+}
+
+fn main() {
+    let input = vec![vec![6, 7, 8], vec![5, 5, 5], vec![7, 5, 6]];
+    let maxs = get_max(&input);
+    let mins = get_min(&input);
+    let res: Vec<(usize, usize)> = maxs.intersection(&mins).cloned().collect();
+    println!("{:?}", res);
 }
