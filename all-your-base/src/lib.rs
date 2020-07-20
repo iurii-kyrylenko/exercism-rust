@@ -1,3 +1,5 @@
+use std::iter;
+
 #[derive(Debug, PartialEq)]
 pub enum Error {
     InvalidInputBase,
@@ -37,10 +39,44 @@ pub enum Error {
 ///    However, your function must be able to process input with leading 0 digits.
 ///
 pub fn convert(number: &[u32], from_base: u32, to_base: u32) -> Result<Vec<u32>, Error> {
-    unimplemented!(
-        "Convert {:?} from base {} to base {}",
-        number,
-        from_base,
-        to_base
-    )
+    match (from_base, to_base) {
+        (0..=1, _) => Err(Error::InvalidInputBase),
+        (_, 0..=1) => Err(Error::InvalidOutputBase),
+        _ => {
+            let parsed = parse(number, from_base)?;
+            Ok(to_digits(parsed, to_base))
+        }
+    }
+}
+
+fn parse(number: &[u32], from_base: u32) -> Result<u32, Error> {
+    number.iter().try_fold(0, |acc, &d| {
+        if d >= from_base {
+            Err(Error::InvalidDigit(d))
+        } else {
+            Ok(d + from_base * acc)
+        }
+    })
+}
+
+fn to_digits(n: u32, base: u32) -> Vec<u32> {
+    if n == 0 {
+        return vec![0];
+    }
+
+    let mut digits: Vec<u32> = iter::successors(div_mod(n, base), |(d, _)| div_mod(*d, base))
+        .map(|(_, m)| m)
+        .collect();
+
+    digits.reverse();
+
+    digits
+}
+
+fn div_mod(n: u32, base: u32) -> Option<(u32, u32)> {
+    if n > 0 {
+        Some((n / base, n % base))
+    } else {
+        None
+    }
 }
