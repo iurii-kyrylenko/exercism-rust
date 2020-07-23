@@ -1,6 +1,14 @@
-pub struct Allergies;
+use bit_set::BitSet;
+use num_enum::TryFromPrimitive;
+use std::collections::HashSet;
+use std::convert::TryFrom;
 
-#[derive(Debug, PartialEq)]
+pub struct Allergies {
+    set: HashSet<Allergen>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, TryFromPrimitive)]
+#[repr(u8)]
 pub enum Allergen {
     Eggs,
     Peanuts,
@@ -14,20 +22,19 @@ pub enum Allergen {
 
 impl Allergies {
     pub fn new(score: u32) -> Self {
-        unimplemented!(
-            "Given the '{}' score, construct a new Allergies struct.",
-            score
-        );
+        let set = BitSet::from_bytes(&[score as u8])
+            .iter()
+            .map(|b| Allergen::try_from(7 - b as u8).unwrap())
+            .collect();
+
+        Self { set }
     }
 
     pub fn is_allergic_to(&self, allergen: &Allergen) -> bool {
-        unimplemented!(
-            "Determine if the patient is allergic to the '{:?}' allergen.",
-            allergen
-        );
+        self.set.contains(allergen)
     }
 
     pub fn allergies(&self) -> Vec<Allergen> {
-        unimplemented!("Return the list of allergens contained within the score with which the Allergies struct was made.");
+        self.set.iter().cloned().collect()
     }
 }
